@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+galaxy.db
+.env
+static/uploads/*
+!static/uploads/.gitkeep
