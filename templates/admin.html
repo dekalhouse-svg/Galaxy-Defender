@@ -1,0 +1,27 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration — Galaxy Defender</title><style>
+*{box-sizing:border-box}body{margin:0;background:#080b20;color:#eef5ff;font-family:system-ui;padding:20px}.wrap{max-width:1100px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:23px;margin:8px 0}a{color:#66eaff}.muted{color:#9aafd4;font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:22px 0}.stat,.panel{background:#101b3a;border:1px solid #2c416b;border-radius:16px;padding:16px}.stat small{display:block;color:#9aafd4;font-size:12px}.stat strong{font-size:27px;display:block;margin-top:5px}.panel{margin:16px 0}h2{font-size:18px;margin:0 0 14px}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}label{display:block;font-size:12px;color:#a9bde0;margin-bottom:6px}input{width:100%;padding:11px;border-radius:9px;border:1px solid #40547b;background:#08122d;color:#fff}button{border:0;border-radius:9px;padding:10px 13px;font-weight:800;background:#5ceaff;color:#07152b;cursor:pointer;margin-top:12px}.danger{background:#ff7186;color:#260813}.secondary{background:#263b64;color:#eaf3ff}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #2a3b60}th{color:#9bb4dd}.tablewrap{overflow:auto}.tag{display:inline-block;padding:4px 8px;border-radius:20px;background:#173c50;color:#7ceeff;font-size:11px}.expired{background:#512b3d;color:#ffb0bf}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions form{margin:0}.actions button{margin:0}.notice{padding:10px;background:#40253c;border-radius:9px;color:#ffb5c4;margin:10px 0}@media(max-width:600px){body{padding:13px}.stat strong{font-size:23px}th,td{padding:8px}}
+</style></head><body><main class="wrap"><header><div><h1>GALAXY DEFENDER · ADMIN</h1><div class="muted">Statistiques de jeu et gestion des publicités</div></div><a href="/admin/logout">Déconnexion</a></header>
+{% if request.args.get('error') %}<div class="notice">{{request.args.get('error')}}</div>{% endif %}
+<section class="grid">
+<div class="stat"><small>Utilisateurs uniques</small><strong>{{stats.total_users}}</strong></div>
+<div class="stat"><small>Utilisateurs aujourd'hui</small><strong>{{stats.users_today}}</strong></div>
+<div class="stat"><small>Utilisateurs · 7 jours</small><strong>{{stats.users_week}}</strong></div>
+<div class="stat"><small>Parties en cours (10 min)</small><strong>{{stats.active_now}}</strong></div>
+<div class="stat"><small>Parties aujourd'hui</small><strong>{{stats.plays_today}}</strong></div>
+<div class="stat"><small>Parties · 7 jours</small><strong>{{stats.plays_week}}</strong></div>
+<div class="stat"><small>Total des parties</small><strong>{{stats.plays_total}}</strong></div>
+<div class="stat"><small>Vues publicitaires</small><strong>{{stats.impressions}}</strong></div>
+<div class="stat"><small>Clics publicitaires</small><strong>{{stats.clicks}}</strong></div>
+<div class="stat"><small>Taux de clic (CTR)</small><strong>{{stats.ctr}}%</strong></div>
+</section>
+<section class="panel"><h2>Publier une publicité</h2><p class="muted">L'image occupe toujours la même bande de 68 px en bas du jeu. Le lien est suivi automatiquement.</p>
+<form method="post" action="/admin/ads" enctype="multipart/form-data"><div class="formgrid">
+<div><label>Nom de la publicité</label><input name="title" maxlength="120" required placeholder="Ex. Hébergement web"></div>
+<div><label>URL à ouvrir au clic</label><input type="url" name="target_url" required placeholder="https://exemple.com"></div>
+<div><label>Image publicitaire (PNG, JPG, WEBP, GIF)</label><input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" required></div>
+<div><label>Durée de diffusion (jours)</label><input type="number" name="duration_days" min="1" max="365" value="7" required></div>
+</div><button>ENREGISTRER LA PUBLICITÉ</button></form></section>
+<section class="panel"><h2>Publicités et performances</h2><div class="tablewrap"><table><thead><tr><th>Publicité</th><th>État</th><th>Fin</th><th>Vues</th><th>Clics</th><th>Actions</th></tr></thead><tbody>
+{% for row in ads %}<tr><td>{{row.ad.title}}</td><td>{% if row.ad.active and not row.expired %}<span class="tag">Active</span>{% else %}<span class="tag expired">Inactive / expirée</span>{% endif %}</td><td>{{row.ad.ends_at.strftime('%d/%m/%Y %H:%M')}} UTC</td><td>{{row.views}}</td><td>{{row.clicks}}</td><td><div class="actions"><form method="post" action="/admin/ads/{{row.ad.id}}/toggle"><button class="secondary">{% if row.ad.active %}Désactiver{% else %}Activer{% endif %}</button></form><form method="post" action="/admin/ads/{{row.ad.id}}/delete" onsubmit="return confirm('Supprimer cette publicité ?')"><button class="danger">Supprimer</button></form></div></td></tr>{% else %}<tr><td colspan="6" class="muted">Aucune publicité publiée.</td></tr>{% endfor %}
+</tbody></table></div></section>
+<p class="muted">Les statistiques sont calculées à partir des événements reçus par le serveur. Les dates sont en UTC.</p></main></body></html>
